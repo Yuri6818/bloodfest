@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  :root {
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #13151a;
+    color: rgba(255, 255, 255, 0.87);
+  }
+
+  body {
+    @apply bg-dark text-light font-sans antialiased min-h-screen m-0 p-0;
+    background: linear-gradient(to bottom, #1a0000 0%, #000000 100%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-gothic text-blood-light;
+  }
+}
+
+/* Layout components */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #1a0000, #000000);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-container {
+  @apply container mx-auto px-4 py-8 relative z-1;
+  background: linear-gradient(to bottom, rgba(26, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.95) 100%);
+}
+
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Components */
+@layer components {
+  .btn {
+    @apply rounded px-6 py-3 text-base font-gothic uppercase tracking-wider
+    cursor-pointer transition-all duration-300 transform hover:scale-105
+    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark
+    disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-blood text-light border-2 border-blood-light
+    hover:bg-blood-dark hover:border-blood focus:ring-blood-light;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-lighter text-light border-2 border-blood
+    hover:bg-dark hover:border-blood-light focus:ring-blood;
+  }
+
+  .btn-outline {
+    @apply border-2 border-blood text-blood hover:bg-blood hover:text-white;
+  }
+
+  .card {
+    @apply bg-dark-lighter border-2 border-blood/20 rounded-lg p-6
+    transition-all duration-300 hover:border-blood/40;
+  }
+
+  .input {
+    @apply bg-dark-darker border-2 border-blood/20 rounded px-4 py-2
+    text-light placeholder-gray-500 focus:border-blood-light
+    focus:outline-none focus:ring-1 focus:ring-blood-light;
+  }
+
+  .link {
+    @apply font-gothic text-blood-light hover:text-blood-dark
+    transition-colors duration-300 underline-offset-4
+    hover:underline;
+  }
+}
+
+/* Effects */
+.drop-shadow-glow {
+  filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
+}
+
+.bg-texture {
+  position: fixed;
+  inset: 0;
+  background-image: url('/textures/dark-texture.png');
+  background-repeat: repeat;
+  background-size: 200px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Auth components */
+.auth-container {
+  @apply min-h-screen flex items-center justify-center p-4 bg-dark bg-texture;
+}
+
+.auth-card {
+  @apply bg-dark-lighter p-8 rounded-lg shadow-xl max-w-md w-full border border-blood/20;
+  backdrop-filter: blur(10px);
+}
+
+.form-group {
+  @apply space-y-2;
+}
