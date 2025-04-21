@@ -6,9 +6,11 @@ import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import authRoutes from './routes/auth';
-import gameRoutes from './routes/game';
-import { errorHandler } from './middleware/errorHandler';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import authRoutes from './routes/auth.js';
+import gameRoutes from './routes/game.js';
+import characterRoutes from './routes/character.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
 
@@ -18,7 +20,7 @@ const port = process.env.PORT || 3001;
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5175',
   credentials: true
 }));
 app.use(express.json({ limit: '10kb' }));
@@ -39,14 +41,37 @@ app.use('/api', limiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
+app.use('/api/character', characterRoutes);
+
+// API status endpoint
+app.get('/api/status', (req, res) => {
+  res.json({ 
+    status: 'online', 
+    environment: process.env.NODE_ENV || 'development', 
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Error handling
 app.use(errorHandler);
 
-// MongoDB connection with retry logic
+// MongoDB connection with in-memory server for development
 const connectDB = async (retries = 5) => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/bloodfest');
+    let uri = process.env.MONGODB_URI;
+    
+    // Use in-memory MongoDB server for development if no URI is provided
+    if (!uri && process.env.NODE_ENV === 'development') {
+      console.log('Starting MongoDB Memory Server for development...');
+      const mongoServer = await MongoMemoryServer.create();
+      uri = mongoServer.getUri();
+      console.log(`MongoDB Memory Server started at ${uri}`);
+    } else if (!uri) {
+      uri = 'mongodb://localhost:27017/bloodfest';
+    }
+    
+    await mongoose.connect(uri);
     console.log('Connected to MongoDB');
   } catch (error) {
     if (retries > 0) {
@@ -64,7 +89,7 @@ connectDB();
 // Graceful shutdown
 const shutdown = () => {
   console.log('Shutting down gracefully...');
-  mongoose.connection.close(false, () => {
+  mongoose.connection.close().then(() => {
     console.log('MongoDB connection closed.');
     process.exit(0);
   });

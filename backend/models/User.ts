@@ -1,33 +1,45 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Document, Types } from 'mongoose';
 
-export interface IUser {
+export interface IUser extends Document {
   username: string;
   email: string;
   password: string;
-  character?: {
-    name: string;
-    level: number;
-    health: number;
-    maxHealth: number;
-    experience: number;
-    inventory: string[];
-    completedQuests: string[];
-  };
+  character: Types.ObjectId | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const userSchema = new Schema<IUser>({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  character: {
-    name: String,
-    level: { type: Number, default: 1 },
-    health: { type: Number, default: 100 },
-    maxHealth: { type: Number, default: 100 },
-    experience: { type: Number, default: 0 },
-    inventory: [String],
-    completedQuests: [String]
+const userSchema = new Schema<IUser>(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      minlength: 3,
+      maxlength: 30
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false // Don't return password by default
+    },
+    character: {
+      type: Schema.Types.ObjectId,
+      ref: 'Character',
+      default: null
+    } as any // Type assertion to bypass the TypeScript error
+  },
+  {
+    timestamps: true
   }
-});
+);
 
 export const User = model<IUser>('User', userSchema);

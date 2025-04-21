@@ -1,75 +1,58 @@
 import { Request, Response, NextFunction } from 'express';
-import { GameLogicError } from '../utils/gameLogic';
 
-export class AppError extends Error {
-  statusCode: number;
-  status: string;
-
-  constructor(message: string, statusCode: number) {
-    super(message);
-    this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith('4') ? 'fail' : 'error';
-    Error.captureStackTrace(this, this.constructor);
-  }
+interface ApiError extends Error {
+  statusCode?: number;
+  details?: any;
 }
 
 export const errorHandler = (
-  err: Error,
+  err: ApiError,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      status: err.status,
-      message: err.message
-    });
-  }
-
-  if (err instanceof GameLogicError) {
-    return res.status(400).json({
-      status: 'fail',
-      message: err.message
-    });
-  }
-
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      status: 'fail',
-      message: 'Invalid input data'
-    });
-  }
-
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      status: 'fail',
-      message: 'Invalid token. Please log in again.'
-    });
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      status: 'fail',
-      message: 'Your token has expired. Please log in again.'
-    });
-  }
-
-  // Log unexpected errors
-  console.error('ERROR 💥', err);
-
-  // Don't leak error details in production
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong!'
-    });
-  }
-
-  // Send detailed error in development
-  return res.status(500).json({
+  console.error('Error:', err);
+  
+  // Default status code and message
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  
+  // Send error response
+  res.status(statusCode).json({
     status: 'error',
-    message: err.message,
-    error: err,
-    stack: err.stack
+    message,
+    ...(process.env.NODE_ENV === 'development' && {
+      stack: err.stack,
+      details: err.details || {}
+    })
   });
 };
+
+// Helper function to create errors with status codes
+export const createError = (message: string, statusCode: number, details?: any): ApiError => {
+  const error: ApiError = new Error(message);
+  error.statusCode = statusCode;
+  if (details) {
+    error.details = details;
+  }
+  return error;
+};
+
+// Common error types
+export const notFound = (resource: string = 'Resource') => 
+  createError(`${resource} not found`, 404);
+
+export const badRequest = (message: string = 'Bad request') => 
+  createError(message, 400);
+
+export const unauthorized = (message: string = 'Unauthorized') => 
+  createError(message, 401);
+
+export const forbidden = (message: string = 'Forbidden') => 
+  createError(message, 403);
+
+export const conflict = (message: string = 'Resource already exists') => 
+  createError(message, 409);
+
+export const serverError = (message: string = 'Internal Server Error') => 
+  createError(message, 500);

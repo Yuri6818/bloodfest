@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { verify } from 'jsonwebtoken';
-import { User } from '../models/User';
-import { generateEnemyStats, calculateExperience } from '../utils/gameLogic';
+import { User } from '../models/User.js';
+import { generateEnemyStats, calculateExperience } from '../utils/gameLogic.js';
 
 const router = Router();
 

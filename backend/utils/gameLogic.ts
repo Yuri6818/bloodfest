@@ -1,4 +1,14 @@
-import type { Enemy } from '../../src/types/game';
+// Define Enemy type locally
+export interface Enemy {
+  id: string;
+  name: string;
+  level: number;
+  health: number;
+  maxHealth: number;
+  damage: number;
+  defense: number;
+  experience: number;
+}
 
 export class GameLogicError extends Error {
   constructor(message: string) {

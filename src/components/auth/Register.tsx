@@ -10,7 +10,7 @@ const Register = () => {
     confirmPassword: ''
   });
   const [validationError, setValidationError] = useState<string | null>(null);
-  const { register, error, clearError } = useAuth();
+  const { register, error, clearError, useMockAuth, setUseMockAuth } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,9 +63,16 @@ const Register = () => {
     try {
       await register(formData.email, formData.password, formData.username);
       navigate('/create-character');
-    } catch (err) {
+    } catch (err: any) {
       // Error is handled by AuthContext
+      console.error('Registration failed');
     }
+  };
+
+  const toggleMockAuth = () => {
+    setUseMockAuth(!useMockAuth);
+    clearError();
+    setValidationError(null);
   };
 
   return (
@@ -125,11 +132,25 @@ const Register = () => {
             required
           />
         </div>
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="useMockAuth"
+            checked={useMockAuth}
+            onChange={toggleMockAuth}
+            className="mr-2"
+          />
+          <label htmlFor="useMockAuth" className="text-sm">
+            {useMockAuth 
+              ? "Using mock registration (backend unavailable)" 
+              : "Try to use real backend registration (may fail)"}
+          </label>
+        </div>
         <button 
           type="submit" 
           className="w-full bg-blood text-dark font-bold py-2 px-4 rounded hover:bg-blood-light transition duration-300"
         >
-          Register
+          {useMockAuth ? "Register (Mock)" : "Register"}
         </button>
         <p className="text-center text-light-darker">
           Already have an account?{' '}

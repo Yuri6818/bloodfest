@@ -1,118 +1,180 @@
 @import url('https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles */
-@layer base {
-  :root {
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: #13151a;
-    color: rgba(255, 255, 255, 0.87);
-  }
+html, body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  body {
-    @apply bg-dark text-light font-sans antialiased min-h-screen m-0 p-0;
-    background: linear-gradient(to bottom, #1a0000 0%, #000000 100%);
-  }
+body {
+  position: relative;
+  background-color: #0a0506;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23420000' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #0a0506, #1a0505);
+  color: #d4c1c1;
+  font-family: 'Crimson Pro', serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
 
+/* CSS-based texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(0deg, rgba(80, 0, 0, 0.1) 0px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(80, 0, 0, 0.1) 0px, transparent 1px, transparent 3px);
+  background-size: 4px 4px;
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Blood drip effect at the top */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 10px;
+  background-image: 
+    linear-gradient(to bottom, transparent, transparent),
+    radial-gradient(circle at 10% 0, #630000 0, transparent 70%),
+    radial-gradient(circle at 20% 0, #8b0000 0, transparent 60%),
+    radial-gradient(circle at 30% 0, #630000 0, transparent 70%),
+    radial-gradient(circle at 40% 0, #8b0000 0, transparent 60%),
+    radial-gradient(circle at 50% 0, #630000 0, transparent 70%),
+    radial-gradient(circle at 60% 0, #8b0000 0, transparent 60%),
+    radial-gradient(circle at 70% 0, #630000 0, transparent 70%),
+    radial-gradient(circle at 80% 0, #8b0000 0, transparent 60%),
+    radial-gradient(circle at 90% 0, #630000 0, transparent 70%);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  z-index: 10;
+}
+
+main {
+  padding-top: 5rem; /* Account for fixed navbar */
+  min-height: calc(100vh - 4rem);
+  position: relative;
+}
+
+@layer components {
+  /* Custom button styles */
+  .btn-primary {
+    @apply bg-blood text-white font-gothic py-2 px-4 rounded-none border border-blood-light shadow-md transition-all duration-300 hover:scale-105 relative overflow-hidden;
+    background-image: linear-gradient(to bottom, rgba(139, 0, 0, 1), rgba(80, 0, 0, 1));
+    letter-spacing: 1px;
+  }
+  
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.6s;
+  }
+  
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+  
+  .btn-secondary {
+    @apply bg-dark-lighter text-light font-gothic py-2 px-4 rounded-none border border-blood/30 shadow-md transition-all duration-300 hover:scale-105;
+    background-image: linear-gradient(to bottom, rgba(45, 31, 31, 1), rgba(20, 10, 10, 1));
+    letter-spacing: 1px;
+  }
+  
+  /* Card styling */
+  .card {
+    @apply bg-black bg-opacity-80 border-2 border-blood p-6 shadow-xl relative font-gothic text-light-darker;
+    clip-path: polygon(
+      0% 15px,     /* top-left */
+      15px 0%,     /* top-left corner */
+      calc(100% - 15px) 0%,   /* top-right */
+      100% 15px,   /* top-right corner */
+      100% calc(100% - 15px), /* bottom-right */
+      calc(100% - 15px) 100%, /* bottom-right corner */
+      15px 100%,   /* bottom-left */
+      0% calc(100% - 15px)    /* bottom-left corner */
+    );
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, transparent 50%, rgba(50, 0, 0, 0.3));
+    pointer-events: none;
+  }
+  
+  /* Form elements */
+  input, textarea, select {
+    @apply bg-dark-lighter border-blood/50 border text-light rounded-none focus:border-blood focus:ring-1 focus:ring-blood-light shadow-inner shadow-black/50;
+  }
+  
+  /* Title and headings */
   h1, h2, h3, h4, h5, h6 {
     @apply font-gothic text-blood-light;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  /* Add a subtle animation to buttons on hover */
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(139, 0, 0, 0.6);
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 5, 5, 0.9);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(139, 0, 0, 0.6);
+    border-radius: 0;
+    border-left: 1px solid rgba(80, 0, 0, 0.2);
+    border-right: 1px solid rgba(80, 0, 0, 0.2);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 0, 0, 0.8);
   }
 }
 
-/* Layout components */
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(to bottom, #1a0000, #000000);
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Gothic-themed table styles */
+table {
+  @apply w-full border-collapse bg-dark-lighter/70 text-light-darker;
 }
 
-.page-container {
-  @apply container mx-auto px-4 py-8 relative z-1;
-  background: linear-gradient(to bottom, rgba(26, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.95) 100%);
+th {
+  @apply py-3 px-4 bg-blood/80 text-light font-gothic text-left border-b border-blood;
 }
 
-.container {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+td {
+  @apply py-3 px-4 border-b border-blood/30;
 }
 
-/* Components */
-@layer components {
-  .btn {
-    @apply rounded px-6 py-3 text-base font-gothic uppercase tracking-wider
-    cursor-pointer transition-all duration-300 transform hover:scale-105
-    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark
-    disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-primary {
-    @apply bg-blood text-light border-2 border-blood-light
-    hover:bg-blood-dark hover:border-blood focus:ring-blood-light;
-  }
-
-  .btn-secondary {
-    @apply bg-dark-lighter text-light border-2 border-blood
-    hover:bg-dark hover:border-blood-light focus:ring-blood;
-  }
-
-  .btn-outline {
-    @apply border-2 border-blood text-blood hover:bg-blood hover:text-white;
-  }
-
-  .card {
-    @apply bg-dark-lighter border-2 border-blood/20 rounded-lg p-6
-    transition-all duration-300 hover:border-blood/40;
-  }
-
-  .input {
-    @apply bg-dark-darker border-2 border-blood/20 rounded px-4 py-2
-    text-light placeholder-gray-500 focus:border-blood-light
-    focus:outline-none focus:ring-1 focus:ring-blood-light;
-  }
-
-  .link {
-    @apply font-gothic text-blood-light hover:text-blood-dark
-    transition-colors duration-300 underline-offset-4
-    hover:underline;
-  }
-}
-
-/* Effects */
-.drop-shadow-glow {
-  filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5));
-}
-
-.bg-texture {
-  position: fixed;
-  inset: 0;
-  background-image: url('/textures/dark-texture.png');
-  background-repeat: repeat;
-  background-size: 200px;
-  opacity: 0.15;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Auth components */
-.auth-container {
-  @apply min-h-screen flex items-center justify-center p-4 bg-dark bg-texture;
-}
-
-.auth-card {
-  @apply bg-dark-lighter p-8 rounded-lg shadow-xl max-w-md w-full border border-blood/20;
-  backdrop-filter: blur(10px);
-}
-
-.form-group {
-  @apply space-y-2;
+tr:hover {
+  @apply bg-dark-lighter;
 }

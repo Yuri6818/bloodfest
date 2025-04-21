@@ -62,54 +62,146 @@ export const calculateExperienceToLevel = (level: number): number => {
   return Math.floor(100 * Math.pow(1.5, level - 1));
 };
 
+/**
+ * Calculate how stats grow when a character levels up
+ */
 export const calculateStatGrowth = (
-  baseStats: CharacterStats,
-  level: number,
-  characterClass: CharacterClass
+  currentStats: CharacterStats,
+  newLevel: number,
+  characterClass: string
 ): CharacterStats => {
-  if (level < 1) throw new GameError('Level must be at least 1');
-  if (!validateStats(baseStats)) throw new GameError('Invalid base stats');
-
-  const growthRates = {
-    warrior: { strength: 2.5, agility: 1.5, intelligence: 1, vitality: 2 },
-    rogue: { strength: 1.5, agility: 2.5, intelligence: 1.5, vitality: 1.5 },
-    mage: { strength: 1, agility: 1.5, intelligence: 2.5, vitality: 1.5 }
+  // Base stat growth factors by class
+  const growthFactors: Record<string, Partial<CharacterStats>> = {
+    warrior: {
+      strength: 2.5,
+      agility: 1.2, 
+      intelligence: 0.8,
+      vitality: 2.0
+    },
+    rogue: {
+      strength: 1.5,
+      agility: 2.5,
+      intelligence: 1.2,
+      vitality: 1.0
+    },
+    mage: {
+      strength: 0.8,
+      agility: 1.0,
+      intelligence: 2.5,
+      vitality: 1.0
+    }
   };
-
-  const growth = growthRates[characterClass];
-  const levelMultiplier = level - 1;
-
+  
+  // Get growth factors for the character's class, default to balanced
+  const factors = growthFactors[characterClass] || {
+    strength: 1.5,
+    agility: 1.5,
+    intelligence: 1.5,
+    vitality: 1.5
+  };
+  
+  // Calculate new stats with growth
   return {
-    strength: Math.floor(baseStats.strength + (growth.strength * levelMultiplier)),
-    agility: Math.floor(baseStats.agility + (growth.agility * levelMultiplier)),
-    intelligence: Math.floor(baseStats.intelligence + (growth.intelligence * levelMultiplier)),
-    vitality: Math.floor(baseStats.vitality + (growth.vitality * levelMultiplier))
+    strength: Math.floor(currentStats.strength + factors.strength!),
+    agility: Math.floor(currentStats.agility + factors.agility!),
+    intelligence: Math.floor(currentStats.intelligence + factors.intelligence!),
+    vitality: Math.floor(currentStats.vitality + factors.vitality!)
   };
 };
 
+/**
+ * Calculate max health based on stats
+ */
 export const calculateMaxHealth = (stats: CharacterStats): number => {
   return 100 + (stats.vitality * 10);
 };
 
+/**
+ * Calculate max energy based on stats
+ */
 export const calculateMaxEnergy = (stats: CharacterStats): number => {
-  return 50 + (stats.intelligence * 5);
+  return 50 + (stats.intelligence * 5) + (stats.vitality * 2);
 };
 
-export const calculateHitChance = (
-  attacker: Character | Enemy,
-  defender: Character | Enemy
-): number => {
-  const baseHitChance = 85;
-  let hitChance = baseHitChance;
+/**
+ * Level up a character
+ */
+export const levelUpCharacter = (character: Character): Character => {
+  const newLevel = character.level + 1;
+  
+  // Calculate new stats
+  const newStats = {
+    ...character.stats,
+    ...calculateStatGrowth(character.stats as CharacterStats, newLevel, character.class)
+  };
+  
+  // Calculate new health and energy
+  const maxHealth = calculateMaxHealth(newStats as CharacterStats);
+  
+  // Return the updated character
+  return {
+    ...character,
+    level: newLevel,
+    stats: newStats,
+    health: {
+      current: maxHealth,
+      max: maxHealth
+    },
+    experience: 0, // Reset experience for next level
+  };
+};
 
-  if ('stats' in attacker && 'stats' in defender) {
-    if (!validateStats(attacker.stats) || !validateStats(defender.stats)) {
-      throw new GameError('Invalid character stats');
-    }
-    hitChance += (attacker.stats.agility * 2) - (defender.stats.agility * 1.5);
+/**
+ * Check if a character has enough experience to level up
+ */
+export const canLevelUp = (character: Character): boolean => {
+  const requiredExp = calculateRequiredExperience(character.level);
+  return character.experience >= requiredExp;
+};
+
+/**
+ * Calculate required experience for the next level
+ */
+export const calculateRequiredExperience = (currentLevel: number): number => {
+  // Simple calculation: 100 * level^2
+  return 100 * Math.pow(currentLevel, 2);
+};
+
+/**
+ * Add experience to a character, handling level ups
+ */
+export const addExperience = (character: Character, amount: number): Character => {
+  let updatedCharacter = {
+    ...character,
+    experience: character.experience + amount
+  };
+  
+  // Check if the character can level up
+  const requiredExp = calculateRequiredExperience(updatedCharacter.level);
+  if (updatedCharacter.experience >= requiredExp) {
+    updatedCharacter = levelUpCharacter(updatedCharacter);
   }
+  
+  return updatedCharacter;
+};
 
-  return Math.min(95, Math.max(50, hitChance));
+/**
+ * Calculate the hit chance in a combat situation
+ */
+export const calculateHitChance = (attacker: Character, defender: Character): number => {
+  // Base hit chance
+  let hitChance = 80;
+  
+  // Adjust based on dexterity/agility difference
+  const attackerDex = attacker.stats.dexterity || 0;
+  const defenderDex = defender.stats.dexterity || 0;
+  const dexDiff = attackerDex - defenderDex;
+  
+  // Each point of dexterity difference adds 2% hit chance
+  hitChance += dexDiff * 2;
+  
+  // Ensure hit chance is between 10% and 95%
+  return Math.min(95, Math.max(10, hitChance));
 };
 
 export const applyEffects = (
@@ -126,16 +218,22 @@ export const applyEffects = (
     
     switch (effect.type) {
       case 'heal':
-        updatedTarget.health = Math.min(
-          updatedTarget.maxHealth,
-          updatedTarget.health + effect.value
-        );
+        updatedTarget.health = {
+          ...updatedTarget.health,
+          current: Math.min(
+            updatedTarget.health.max,
+            updatedTarget.health.current + effect.value
+          )
+        };
         break;
       case 'damage':
-        updatedTarget.health = Math.max(
-          0,
-          updatedTarget.health - effect.value
-        );
+        updatedTarget.health = {
+          ...updatedTarget.health,
+          current: Math.max(
+            0,
+            updatedTarget.health.current - effect.value
+          )
+        };
         break;
       case 'buff':
       case 'debuff':
@@ -225,4 +323,11 @@ const generateEnemyName = (level: number): string => {
   const type = types[Math.floor(Math.random() * types.length)];
   
   return `${prefix} ${type}`;
+};
+
+/**
+ * Generate a random number between min and max, inclusive
+ */
+export const randomNumber = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 };

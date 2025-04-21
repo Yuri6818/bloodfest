@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,60 +7,64 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#e53e3e',
-        secondary: '#4a5568',
-        accent: '#ffd700',
+        primary: '#8b0000',
+        secondary: '#1a0505',
+        accent: '#9a7d0a',
         dark: {
-          DEFAULT: '#1a0f0f',
-          lighter: '#2d1f1f',
-          darker: '#0f0808',
+          DEFAULT: '#0a0506',
+          lighter: '#1a0f0f',
+          darker: '#050203',
         },
         light: {
-          DEFAULT: '#e9e9e9',
-          darker: '#d4d4d4',
+          DEFAULT: '#d4c1c1',
+          darker: '#b0a0a0',
         },
         blood: {
-          light: '#ff4040',
+          light: '#bb0000',
           DEFAULT: '#8b0000',
-          dark: '#4a0404',
+          dark: '#4a0000',
+        },
+        bone: {
+          light: '#e8e6d9',
+          DEFAULT: '#c7c4b8',
+          dark: '#a49f90',
+        },
+        parchment: {
+          light: '#f5f0e6',
+          DEFAULT: '#e8dcc8',
+          dark: '#d5c7ae',
         }
       },
       fontFamily: {
         gothic: ['MedievalSharp', 'serif'],
-        sans: [
-          'system-ui',
-          '-apple-system',
-          'BlinkMacSystemFont',
-          'Segoe UI',
-          'Roboto',
-          'Helvetica Neue',
-          'Arial',
-          'sans-serif'
-        ],
+        serif: ['Crimson Pro', 'serif'],
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'texture': "url('/textures/dark-texture.png')",
+        'dark-texture': "url(\"data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23420000' fill-opacity='0.15'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
       },
-      keyframes: {
-        'slide-in': {
-          '0%': { transform: 'translateX(100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
-        'slide-out': {
-          '0%': { transform: 'translateX(0)', opacity: '1' },
-          '100%': { transform: 'translateX(100%)', opacity: '0' },
-        },
+      boxShadow: {
+        'blood': '0 4px 14px -2px rgba(139, 0, 0, 0.8)',
+        'inner-blood': 'inset 0 2px 4px 0 rgba(139, 0, 0, 0.4)',
       },
       animation: {
-        'slide-in': 'slide-in 0.3s ease-out',
-        'slide-out': 'slide-out 0.3s ease-in',
+        'flicker': 'flicker 8s infinite alternate',
+        'blood-drip': 'blood-drip 10s ease-in-out infinite',
       },
-      zIndex: {
-        '1': '1',
+      keyframes: {
+        flicker: {
+          '0%, 18%, 22%, 25%, 53%, 57%, 100%': { opacity: 1 },
+          '20%, 24%, 55%': { opacity: 0.8 },
+        },
+        'blood-drip': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(10px)' },
+        },
+      },
+      dropShadow: {
+        'blood': '0 0 8px rgba(139, 0, 0, 0.5)',
       },
     },
   },
   plugins: [],
-  darkMode: 'class'
 }
